@@ -22,26 +22,16 @@ O redirecionamento automático para WhatsApp não funcionava no iOS Safari devid
 ## Como Testar
 
 ### No iOS Safari:
-1. Abra o site no iPhone/iPad
-2. Preencha formulário de confirmação de presença
-3. Clique em "Confirmar via WhatsApp"
-4. O WhatsApp deve abrir automaticamente
-5. Se não abrir, use o botão "Abrir WhatsApp"
+1. Confirme presença ou reserve um presente
+2. Verifique se o redirecionamento funciona automaticamente
+3. Se não funcionar, use o botão manual "Abrir WhatsApp"
 
-### Outras Plataformas:
-- Android Chrome: Funcionamento normal
-- Desktop: Abre WhatsApp Web
-- Outros navegadores móveis: Fallback funciona
+### URLs de Exemplo:
+- **RSVP**: https://wa.me/51994495406?text=*CONFIRMAÇÃO%20DE%20PRESENÇA%20-%20CASAMENTO%20VITÓRIA%20%26%20EDUARDO*
+- **Presente**: https://wa.me/51994495406?text=Olá!%20Eu%20gostaria%20de%20reservar%20o%20presente
 
-## URLs de Teste Diretas
-
-```
-# Confirmação de Presença
-https://wa.me/5551982465709?text=*CONFIRMAÇÃO%20DE%20PRESENÇA%20-%20CASAMENTO%20VITÓRIA%20%26%20EDUARDO*
-
-# Reserva de Presente
-https://wa.me/5551982465709?text=Olá!%20Eu%20gostaria%20de%20reservar%20o%20presente
-```
+## Status: ✅ Resolvido
+Funciona corretamente em todos os dispositivos e navegadores testados.
 
 ## Status de Compatibilidade
 

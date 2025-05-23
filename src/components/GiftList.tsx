@@ -532,13 +532,16 @@ const GiftList: React.FC = () => {
 
   // Função para criar a URL do WhatsApp
   const createWhatsAppUrl = (giftName: string, userName: string, phone: string, message: string) => {
-    const baseUrl = 'https://wa.me/5551982465709'; // Substitua pelo número de telefone correto
+    const baseUrl = 'https://wa.me/51994495406'; // Substitua pelo número de telefone correto
     
     const text = encodeURIComponent(
+      `🤵👰 *CASAMENTO VITORIA & EDUARDO* 💍\n\n` +
       `Olá! Eu gostaria de reservar o presente: *${giftName}*\n\n` +
-      `Nome: ${userName}\n` +
-      `Telefone: ${phone}\n` +
-      (message ? `Mensagem: ${message}\n\n` : '\n') +
+      `👤 Nome: ${userName}\n` +
+      `📱 Telefone: ${phone}\n` +
+      (message ? `💌 Mensagem: ${message}\n\n` : '\n') +
+      `📅 Data do Casamento: 20/09/2025\n` +
+      `📍 Local: Nossoaconchego Eventos - Av. Mendanha, 1495 - Centro - Viamão, RS\n\n` +
       `Enviado através da lista de presentes online.`
     );
     

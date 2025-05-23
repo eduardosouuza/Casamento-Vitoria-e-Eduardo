@@ -22,9 +22,9 @@ function App() {
     segundos: 0
   });
 
-  // Data do evento - 20 de Setembro de 2025 às 17h
+  // Data do evento - 20 de Setembro de 2025 às 16h
   // No JavaScript, os meses começam do 0 (janeiro = 0, setembro = 8)
-  const eventDate = new Date(2025, 8, 20, 17, 0, 0).getTime();
+  const eventDate = new Date(2025, 8, 20, 16, 0, 0).getTime();
 
   // useEffect para bloquear/desbloquear scroll quando modal está ativo
   useEffect(() => {
@@ -94,7 +94,7 @@ function App() {
 
   // Função para criar URL do WhatsApp com os dados do formulário
   const createRsvpWhatsAppUrl = () => {
-    const baseUrl = 'https://wa.me/5551982465709';
+    const baseUrl = 'https://wa.me/51994495406';
     
     const text = encodeURIComponent(
       `*CONFIRMAÇÃO DE PRESENÇA - CASAMENTO VITÓRIA & EDUARDO*\n\n` +
@@ -102,7 +102,7 @@ function App() {
       `📱 *Telefone:* ${rsvpFormData.phone}\n` +
       (rsvpFormData.message ? `💬 *Mensagem:* ${rsvpFormData.message}\n\n` : '\n') +
       `📅 *Data:* 20 de Setembro de 2025\n` +
-      `🕐 *Horário:* 17:00h\n` +
+      `🕐 *Horário:* 16:00h\n` +
       `📍 *Local:* Nossoaconchego Eventos\n` +
       `💰 *Valor:* R$ 80,00 por pessoa\n\n` +
       `Enviado através do convite online.`
@@ -490,7 +490,7 @@ function App() {
                   <p className="text-sm font-sans font-medium tracking-[0.25em] text-[#3c4d2c] bg-white/80 rounded-lg py-1.5 px-5 shadow-inner relative">
                     <span className="relative inline-block">
                       <span className="absolute -left-3 top-1/2 w-2 h-2 rounded-full bg-[#3c4d2c]/30 transform -translate-y-1/2"></span>
-                      17H
+                      16H
                       <span className="absolute -right-3 top-1/2 w-2 h-2 rounded-full bg-[#3c4d2c]/30 transform -translate-y-1/2"></span>
                     </span>
                   </p>
@@ -845,7 +845,7 @@ function App() {
                     <span className="text-xl text-[#3c4d2c] mr-3">⏰</span>
                     <div>
                       <span className="font-medium text-[#3c4d2c] block text-sm">Horário:</span>
-                      <p className="text-gray-700 font-medium text-lg">17:00</p>
+                      <p className="text-gray-700 font-medium text-lg">16:00</p>
                     </div>
                   </div>
                   <div className="flex items-center bg-[#f8f5f0]/60 p-3 rounded-2xl">
@@ -1029,7 +1029,7 @@ function App() {
                 
                 <div className="flex flex-col gap-3 mt-4">
                   <a 
-                    href="https://wa.me/5551982465709" 
+                    href="https://wa.me/51994495406" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex items-center p-3 bg-[#f8f5f0]/80 rounded-2xl hover:bg-[#f8f5f0] transition-colors shadow-sm transform hover:scale-105 transition-all"
