@@ -532,7 +532,7 @@ const GiftList: React.FC = () => {
 
   // Função para criar a URL do WhatsApp
   const createWhatsAppUrl = (giftName: string, userName: string, phone: string, message: string) => {
-    const baseUrl = 'https://wa.me/51994495406'; // Substitua pelo número de telefone correto
+    const baseUrl = 'https://wa.me/5551994495406'; // Substitua pelo número de telefone correto
     
     const text = encodeURIComponent(
       `🤵👰 *CASAMENTO VITORIA & EDUARDO* 💍\n\n` +

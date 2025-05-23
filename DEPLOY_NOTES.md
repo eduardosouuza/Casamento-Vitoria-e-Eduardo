@@ -27,8 +27,8 @@ O redirecionamento automático para WhatsApp não funcionava no iOS Safari devid
 3. Se não funcionar, use o botão manual "Abrir WhatsApp"
 
 ### URLs de Exemplo:
-- **RSVP**: https://wa.me/51994495406?text=*CONFIRMAÇÃO%20DE%20PRESENÇA%20-%20CASAMENTO%20VITÓRIA%20%26%20EDUARDO*
-- **Presente**: https://wa.me/51994495406?text=Olá!%20Eu%20gostaria%20de%20reservar%20o%20presente
+- **RSVP**: https://wa.me/5551994495406?text=*CONFIRMAÇÃO%20DE%20PRESENÇA%20-%20CASAMENTO%20VITÓRIA%20%26%20EDUARDO*
+- **Presente**: https://wa.me/5551994495406?text=Olá!%20Eu%20gostaria%20de%20reservar%20o%20presente
 
 ## Status: ✅ Resolvido
 Funciona corretamente em todos os dispositivos e navegadores testados.

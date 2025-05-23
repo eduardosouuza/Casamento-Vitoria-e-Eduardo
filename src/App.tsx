@@ -92,9 +92,9 @@ function App() {
     }));
   };
 
-  // Função para criar URL do WhatsApp com os dados do formulário
+  // Função para criar a URL do WhatsApp com os dados do formulário RSVP
   const createRsvpWhatsAppUrl = () => {
-    const baseUrl = 'https://wa.me/51994495406';
+    const baseUrl = 'https://wa.me/5551994495406';
     
     const text = encodeURIComponent(
       `*CONFIRMAÇÃO DE PRESENÇA - CASAMENTO VITÓRIA & EDUARDO*\n\n` +
@@ -1029,7 +1029,7 @@ function App() {
                 
                 <div className="flex flex-col gap-3 mt-4">
                   <a 
-                    href="https://wa.me/51994495406" 
+                    href="https://wa.me/5551994495406" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex items-center p-3 bg-[#f8f5f0]/80 rounded-2xl hover:bg-[#f8f5f0] transition-colors shadow-sm transform hover:scale-105 transition-all"
