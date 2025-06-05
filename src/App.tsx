@@ -15,6 +15,9 @@ function App() {
   });
   const [rsvpFormSubmitted, setRsvpFormSubmitted] = useState(false);
   
+  // Estado para controlar a cópia do PIX
+  const [pixCopied, setPixCopied] = useState(false);
+  
   const [countdown, setCountdown] = useState({
     dias: 0,
     horas: 0,
@@ -144,6 +147,8 @@ function App() {
       message: ''
     });
     setRsvpFormSubmitted(false);
+    // Reset do estado de PIX copiado
+    setPixCopied(false);
   };
 
   const scrollToManual = () => {
@@ -151,6 +156,26 @@ function App() {
       behavior: 'smooth',
       block: 'start'
     });
+  };
+
+  // Função para copiar a chave PIX
+  const copyPixKey = async () => {
+    const pixKey = '601.306.700-73';
+    try {
+      await navigator.clipboard.writeText(pixKey);
+      setPixCopied(true);
+      setTimeout(() => setPixCopied(false), 3000); // Remove o feedback após 3 segundos
+    } catch (err) {
+      // Fallback para navegadores que não suportam clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = pixKey;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setPixCopied(true);
+      setTimeout(() => setPixCopied(false), 3000);
+    }
   };
 
   const renderModal = () => {
@@ -292,6 +317,70 @@ function App() {
                     </button>
                   </div>
                 </form>
+                
+                {/* Seção PIX - Nova seção adicionada */}
+                <div className="mt-6 p-4 bg-gradient-to-r from-green-50/90 to-emerald-50/90 border border-green-200/70 rounded-xl shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 shadow-sm">
+                        <span className="text-xl">💰</span>
+                      </div>
+                      <div>
+                        <h3 className="font-serif text-base font-bold text-green-800">PIX - Pagamento para Confirmação</h3>
+                        <p className="text-xs text-green-600">Eduardo da Silva Souza</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3 p-3 bg-white/60 rounded-lg border border-green-200/40">
+                    <p className="text-sm text-gray-700 text-center font-medium">
+                      ⚠️ <span className="font-bold text-green-800">Faça o pagamento via PIX para confirmar sua presença</span>
+                    </p>
+                    <p className="text-xs text-gray-600 text-center mt-1">
+                      Valor: <span className="font-bold text-green-700">R$ 80,00 por pessoa</span> • Prazo: até 15/08
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-green-200/50">
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-600 mb-1">Chave PIX:</p>
+                      <p className="text-sm font-mono font-medium text-gray-800 select-all">601.306.700-73</p>
+                    </div>
+                    <button
+                      onClick={copyPixKey}
+                      className={`ml-3 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 flex items-center gap-2 ${
+                        pixCopied 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
+                      }`}
+                    >
+                      {pixCopied ? (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                          </svg>
+                          Copiado!
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                          Copiar
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  <div className="mt-3 p-2 bg-yellow-50/80 border border-yellow-200/60 rounded-lg">
+                    <p className="text-xs text-yellow-800 text-center font-medium">
+                      📝 Após o pagamento, envie o comprovante pelo WhatsApp
+                    </p>
+                  </div>
+                  
+                  
+                </div>
                 
                 <div className="mt-6 p-4 bg-[#f8f5f0] rounded-lg">
                   <p className="font-serif text-base font-bold text-[#3c4d2c]">Informações importantes:</p>
@@ -876,7 +965,7 @@ function App() {
                 </div>
                 <div className="flex justify-center mt-4 mb-3">
                   <div className="px-6 py-2 bg-[#f8f5f0]/60 rounded-full">
-                    <p className="text-xl font-serif font-semibold text-[#3c4d2c]">Traje Esporte Fino</p>
+                    <p className="text-xl font-serif font-semibold text-[#3c4d2c]">Traje Social</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-5">
