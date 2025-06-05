@@ -971,11 +971,9 @@ function App() {
                 <div className="grid grid-cols-2 gap-3 mt-5">
                   <div className="bg-[#f8f5f0]/60 p-3 rounded-2xl">
                     <p className="text-center font-medium text-[#3c4d2c] text-sm mb-1">Homens</p>
-                    <p className="text-center text-gray-700 text-xs">Calça social, camisa e sapato</p>
                   </div>
                   <div className="bg-[#f8f5f0]/60 p-3 rounded-2xl">
                     <p className="text-center font-medium text-[#3c4d2c] text-sm mb-1">Mulheres</p>
-                    <p className="text-center text-gray-700 text-xs">Vestido ou conjunto elegante</p>
                   </div>
                 </div>
               </div>
