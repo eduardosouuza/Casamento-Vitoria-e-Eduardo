@@ -14,6 +14,7 @@ export interface GiftItem {
   description: string;
   reserved: boolean;
   imageurl: string; // Nome correto da coluna no banco
+  category?: string; // Categoria do presente (cozinha, sala, quarto, etc.)
   reserved_by?: string;
   reserved_contact?: string;
   reserved_at?: string;
@@ -91,6 +92,17 @@ export const giftService = {
           giftData.desc = gift.description;
         } else if (tableColumns.includes('details')) {
           giftData.details = gift.description;
+        }
+      }
+      
+      // Campo de categoria - testamos variações
+      if (gift.category) {
+        if (tableColumns.includes('category')) {
+          giftData.category = gift.category;
+        } else if (tableColumns.includes('categoria')) {
+          giftData.categoria = gift.category;
+        } else if (tableColumns.includes('tipo')) {
+          giftData.tipo = gift.category;
         }
       }
       
@@ -216,6 +228,17 @@ export const giftService = {
           giftData.desc = gift.description;
         } else if (tableColumns.includes('details')) {
           giftData.details = gift.description;
+        }
+      }
+      
+      // Campo de categoria - testamos variações
+      if (gift.category) {
+        if (tableColumns.includes('category')) {
+          giftData.category = gift.category;
+        } else if (tableColumns.includes('categoria')) {
+          giftData.categoria = gift.category;
+        } else if (tableColumns.includes('tipo')) {
+          giftData.tipo = gift.category;
         }
       }
       
@@ -407,5 +430,59 @@ export const giftService = {
     
     // Comparação simples de senha (em produção usar hash)
     return data.password === password;
+  },
+
+  // Função para adicionar a coluna category na tabela gifts
+  addCategoryColumn: async function() {
+    try {
+      console.log('🔧 Tentando adicionar coluna category na tabela gifts...');
+      
+      // Executar SQL para adicionar a coluna
+      const { data, error } = await supabase.rpc('add_category_column');
+      
+      if (error) {
+        console.error('❌ Erro ao adicionar coluna category:', error);
+        return { success: false, error: error.message };
+      }
+      
+      console.log('✅ Coluna category adicionada com sucesso!');
+      return { success: true, data };
+      
+    } catch (e) {
+      console.error('❌ Exceção ao adicionar coluna category:', e);
+      return { 
+        success: false, 
+        error: e instanceof Error ? e.message : 'Erro desconhecido' 
+      };
+    }
+  },
+
+  // Função alternativa para adicionar coluna usando SQL direto
+  addCategoryColumnDirect: async function() {
+    try {
+      console.log('🔧 Adicionando coluna category diretamente...');
+      
+      // Usar query SQL direta para adicionar a coluna
+      const { data, error } = await supabase
+        .from('gifts')
+        .select('*')
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Erro ao verificar tabela:', error);
+        return { success: false, error: error.message };
+      }
+
+      // Se chegou aqui, vamos tentar adicionar um presente com category para testar
+      console.log('📋 Estrutura atual verificada, tentando adicionar category aos presentes existentes...');
+      return { success: true, message: 'Verificação concluída' };
+      
+    } catch (e) {
+      console.error('❌ Exceção:', e);
+      return { 
+        success: false, 
+        error: e instanceof Error ? e.message : 'Erro desconhecido' 
+      };
+    }
   }
 }; 

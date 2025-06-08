@@ -77,12 +77,20 @@ const GiftList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'available' | 'reserved'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('todas');
+
+  // Categorias disponíveis
+  const categories = [
+    { value: 'todas', label: 'Todas as Categorias', icon: '🏠', color: 'gray' },
+    { value: 'cozinha', label: 'Cozinha', icon: '🍳', color: 'orange' },
+    { value: 'sala', label: 'Sala', icon: '🛋️', color: 'blue' },
+    { value: 'quarto', label: 'Quarto', icon: '🛏️', color: 'purple' },
+    { value: 'banheiro', label: 'Banheiro', icon: '🚿', color: 'cyan' },
+    { value: 'lavanderia', label: 'Lavanderia', icon: '🧺', color: 'green' },
+    { value: 'diversos', label: 'Diversos', icon: '🎁', color: 'pink' }
+  ];
   
-  // Debug: mostrar lista antes da ordenação
-  console.log('\n🎁 LISTA ANTES DA ORDENAÇÃO:');
-  gifts.forEach((gift, index) => {
-    console.log(`${index + 1}. "${gift.name}" (reservado: ${gift.reserved})`);
-  });
+
 
   // Função para filtrar e ordenar os presentes
   const filteredGifts = gifts
@@ -99,7 +107,15 @@ const GiftList: React.FC = () => {
         matchesAvailability = gift.reserved;
       }
       
-      return matchesSearch && matchesAvailability;
+      // Filtro de categoria
+      let matchesCategory = true;
+      if (selectedCategory !== 'todas') {
+        // Se o presente não tem categoria definida, considera como "diversos"
+        const giftCategory = gift.category || 'diversos';
+        matchesCategory = giftCategory === selectedCategory;
+      }
+      
+      return matchesSearch && matchesAvailability && matchesCategory;
     })
     .sort((a, b) => {
       // Primeiro critério: presentes disponíveis vêm primeiro
@@ -111,16 +127,13 @@ const GiftList: React.FC = () => {
       return a.name.toLowerCase().trim().localeCompare(b.name.toLowerCase().trim(), 'pt-BR');
     });
 
-  // Debug: mostrar lista após a ordenação
-  console.log('\n✅ LISTA APÓS A ORDENAÇÃO:');
-  filteredGifts.forEach((gift, index) => {
-    console.log(`${index + 1}. "${gift.name}" (reservado: ${gift.reserved})`);
-  });
+
 
   // Função para limpar todos os filtros
   const clearFilters = () => {
     setSearchTerm('');
     setFilterType('all');
+    setSelectedCategory('todas');
   };
 
   // Função para obter contagem de presentes
@@ -163,13 +176,24 @@ const GiftList: React.FC = () => {
     name: string;
     description: string;
     imageurl: string;  // Alterado de imageUrl para imageurl
+    category: string;
   }>({
     name: '',
     description: '',
-    imageurl: ''  // Alterado de imageUrl para imageurl
+    imageurl: '',  // Alterado de imageUrl para imageurl
+    category: 'diversos'
   });
   const [editGift, setEditGift] = useState<GiftItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Estados para importação JSON
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResults, setImportResults] = useState<{
+    success: number;
+    errors: string[];
+    total: number;
+  } | null>(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   
   // Função para buscar estatísticas atualizadas
   const updateAdminStats = () => {
@@ -250,7 +274,8 @@ const GiftList: React.FC = () => {
     setNewGift({
       name: '',
       description: '',
-      imageurl: ''
+      imageurl: '',
+      category: 'diversos'
     });
   };
   
@@ -288,6 +313,209 @@ const GiftList: React.FC = () => {
     linkElement.click();
   };
 
+  // Função para gerar template JSON
+  const exportTemplateJSON = () => {
+    const template = [
+      {
+        "name": "Jogo de Panelas",
+        "description": "Conjunto completo com 5 panelas antiaderentes",
+        "imageurl": "🍳",
+        "category": "cozinha"
+      },
+      {
+        "name": "Micro-ondas",
+        "description": "Micro-ondas 30 litros com grill",
+        "imageurl": "📡",
+        "category": "cozinha"
+      },
+      {
+        "name": "Sofá",
+        "description": "Sofá 3 lugares cor bege",
+        "imageurl": "🛋️",
+        "category": "sala"
+      },
+      {
+        "name": "Jogo de Cama",
+        "description": "Jogo de cama casal 100% algodão",
+        "imageurl": "🛏️",
+        "category": "quarto"
+      },
+      {
+        "name": "Toalhas de Banho",
+        "description": "Kit com 4 toalhas felpudas",
+        "imageurl": "🚿",
+        "category": "banheiro"
+      },
+      {
+        "name": "Cesto de Roupa",
+        "description": "Cesto organizador para lavanderia",
+        "imageurl": "🧺",
+        "category": "lavanderia"
+      }
+    ];
+    
+    try {
+      const dataStr = JSON.stringify(template, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      
+      const exportFileName = `template-presentes.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.href = url;
+      linkElement.download = exportFileName;
+      linkElement.style.display = 'none';
+      
+      // Adicionar ao DOM temporariamente
+      document.body.appendChild(linkElement);
+      
+      // Tentar fazer o download
+      linkElement.click();
+      
+      // Remover do DOM e limpar URL
+      document.body.removeChild(linkElement);
+      window.URL.revokeObjectURL(url);
+      
+      // Feedback para o usuário
+      setTimeout(() => {
+        alert(`Template JSON criado!\n\nArquivo: ${exportFileName}\n\nSe o download não iniciou, verifique:\n- Bloqueadores de pop-up\n- Configurações de download do navegador\n- Permissões de arquivo`);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Erro ao gerar template:', error);
+      
+      // Fallback: mostrar o JSON em um modal para copy/paste
+      const templateText = JSON.stringify(template, null, 2);
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Template JSON - Lista de Presentes</title>
+              <style>
+                body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+                .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                pre { background: #f8f8f8; padding: 15px; border-radius: 4px; overflow: auto; }
+                .copy-btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h2>Template para Importação de Presentes</h2>
+                <p>Copie o código abaixo e salve como "template-presentes.json":</p>
+                <button class="copy-btn" onclick="copyToClipboard()">Copiar JSON</button>
+                <pre id="jsonContent">${templateText}</pre>
+                <script>
+                  function copyToClipboard() {
+                    const content = document.getElementById('jsonContent').textContent;
+                    navigator.clipboard.writeText(content).then(() => {
+                      alert('JSON copiado para a área de transferência!');
+                    });
+                  }
+                </script>
+              </div>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      } else {
+        alert('Por favor, permita pop-ups e tente novamente, ou copie o template manualmente do console.');
+        console.log('Template JSON:', templateText);
+      }
+    }
+  };
+
+  // Função para importar presentes via JSON
+  const importGiftsFromJSON = async (file: File) => {
+    setIsImporting(true);
+    setImportResults(null);
+    
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+      
+      // Validar se é um array
+      if (!Array.isArray(jsonData)) {
+        throw new Error('O arquivo JSON deve conter um array de presentes');
+      }
+      
+      const results = {
+        success: 0,
+        errors: [] as string[],
+        total: jsonData.length
+      };
+      
+      // Processar cada presente
+      for (let i = 0; i < jsonData.length; i++) {
+        const giftData = jsonData[i];
+        
+        try {
+          // Validar campos obrigatórios
+          if (!giftData.name || !giftData.description) {
+            throw new Error(`Item ${i + 1}: Nome e descrição são obrigatórios`);
+          }
+          
+          // Criar objeto do presente
+          const newGiftItem = {
+            name: giftData.name.trim(),
+            description: giftData.description.trim(),
+            imageurl: giftData.imageurl || giftData.imageUrl || '🎁', // Suporta ambos os formatos
+            category: giftData.category || 'diversos', // Categoria padrão se não especificada
+            reserved: false
+          };
+          
+          // Adicionar ao banco
+          const addedGift = await giftService.addGift(newGiftItem);
+          
+          if (addedGift) {
+            results.success++;
+            // Adicionar à lista local
+            setGifts(prev => [...prev, addedGift]);
+          } else {
+            throw new Error(`Falha ao salvar no banco de dados`);
+          }
+          
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+          results.errors.push(`Item ${i + 1}: ${errorMsg}`);
+        }
+      }
+      
+      setImportResults(results);
+      
+      // Atualizar estatísticas
+      updateAdminStats();
+      
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Erro ao processar arquivo';
+      setImportResults({
+        success: 0,
+        errors: [errorMsg],
+        total: 0
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  // Função para lidar com a seleção de arquivo JSON
+  const handleJSONFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+        alert('Por favor, selecione um arquivo JSON válido.');
+        return;
+      }
+      
+      if (window.confirm(`Deseja importar presentes do arquivo "${file.name}"?\n\nIsto irá adicionar novos itens à lista.`)) {
+        importGiftsFromJSON(file);
+      }
+    }
+    
+    // Limpar o input
+    e.target.value = '';
+  };
+
   // Função para sair do modo de administração
   const exitAdminMode = () => {
     setAdminMode(false);
@@ -321,6 +549,7 @@ const GiftList: React.FC = () => {
       const giftData = {
         name: newGift.name,
         description: newGift.description,
+        category: newGift.category,
         // Incluindo todas as possíveis variações do campo de imagem
         imageurl: newGift.imageurl,
         image_url: newGift.imageurl,
@@ -340,7 +569,8 @@ const GiftList: React.FC = () => {
         setNewGift({
           name: '',
           description: '',
-          imageurl: ''
+          imageurl: '',
+          category: 'diversos'
         });
         
         alert('Presente adicionado com sucesso!');
@@ -391,6 +621,7 @@ const GiftList: React.FC = () => {
         name: editGift.name,
         description: editGift.description,
         imageurl: editGift.imageurl,
+        category: editGift.category,
         reserved: editGift.reserved,
         reserved_by: editGift.reserved_by,
         reserved_contact: editGift.reserved_contact,
@@ -420,7 +651,7 @@ const GiftList: React.FC = () => {
   };
 
   // Função para lidar com a mudança nos campos do formulário de edição
-  const handleEditGiftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleEditGiftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!editGift) return;
     
     const { name, value } = e.target;
@@ -483,7 +714,7 @@ const GiftList: React.FC = () => {
   };
   
   // Função para lidar com a mudança nos campos do formulário de novo presente
-  const handleNewGiftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleNewGiftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     console.log("Modificando campo:", name, "com valor:", value);  // Adicionando log para debug
@@ -604,7 +835,9 @@ const GiftList: React.FC = () => {
       
       if (result && result.success) {
         if (result.columns && result.columns.length > 0) {
-          alert(`Colunas na tabela: ${result.columns.join(', ')}`);
+          const columnList = result.columns as string[];
+          const hasCategory = columnList.indexOf('category') !== -1;
+          alert(`Colunas na tabela: ${columnList.join(', ')}\n\nColuna 'category' existe: ${hasCategory ? 'SIM ✅' : 'NÃO ❌'}`);
         } else {
           alert('A tabela está vazia. Não foi possível verificar as colunas.');
         }
@@ -614,6 +847,45 @@ const GiftList: React.FC = () => {
     } catch (err) {
       console.error('Erro ao verificar estrutura:', err);
       alert('Erro ao verificar estrutura da tabela');
+    }
+  };
+
+  // Função para adicionar a coluna category na tabela
+  const addCategoryColumn = async () => {
+    if (!window.confirm('Deseja adicionar a coluna "category" na tabela gifts? Isso é necessário para que os filtros de categoria funcionem.')) {
+      return;
+    }
+
+    try {
+      // Vamos usar uma abordagem simples: tentar fazer update nos presentes existentes
+      console.log('🔧 Adicionando suporte para categoria...');
+      
+      // Primeiro vamos buscar um presente para ver se já tem a coluna
+      const gifts = await giftService.getAllGifts();
+      
+      if (gifts.length > 0) {
+        const firstGift = gifts[0];
+        
+        // Tentar atualizar o primeiro presente com categoria
+        const updateResult = await giftService.updateGift({
+          ...firstGift,
+          category: firstGift.category || 'diversos'
+        });
+        
+        if (updateResult) {
+          alert('✅ Suporte para categoria configurado com sucesso!\n\nAgora você pode usar os filtros de categoria.');
+          // Recarregar a lista de presentes
+          window.location.reload();
+        } else {
+          alert('❌ Erro ao configurar categoria. A coluna pode não existir na tabela.\n\nVocê precisará criar a coluna "category" manualmente no Supabase.');
+        }
+      } else {
+        alert('❌ Não há presentes na lista para testar. Adicione um presente primeiro.');
+      }
+      
+    } catch (err) {
+      console.error('Erro ao adicionar coluna category:', err);
+      alert('❌ Erro ao configurar categoria. Veja o console para detalhes.');
     }
   };
 
@@ -855,6 +1127,24 @@ const GiftList: React.FC = () => {
                     <option value="reserved">Reservados</option>
                   </select>
                 </div>
+
+                {/* Filtro de categoria */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                    Categoria
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-3 bg-white/90 backdrop-blur-sm border border-white/70 rounded-lg focus:ring-2 focus:ring-[#3c4d2c]/40 focus:border-transparent shadow-sm transition-all duration-300"
+                  >
+                    {categories.map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.icon} {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 
                 {/* Botão para limpar filtros */}
                 <div className="flex items-end">
@@ -870,9 +1160,14 @@ const GiftList: React.FC = () => {
           )}
           
           {/* Resultados da busca */}
-          {searchTerm || filterType !== 'all' ? (
+          {searchTerm || filterType !== 'all' || selectedCategory !== 'todas' ? (
             <div className="mt-3 text-sm text-gray-600">
               Exibindo {filteredGifts.length} de {gifts.length} presentes
+              {selectedCategory !== 'todas' && (
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                  {categories.find(cat => cat.value === selectedCategory)?.icon} {categories.find(cat => cat.value === selectedCategory)?.label}
+                </span>
+              )}
               {filteredGifts.length === 0 && (
                 <p className="mt-1 text-gray-500 italic">Nenhum presente encontrado com os filtros atuais.</p>
               )}
@@ -946,9 +1241,36 @@ const GiftList: React.FC = () => {
                 </div>
                 
                 <div className="flex flex-col flex-grow">
-                  <h3 className="text-xl font-serif text-[#3c4d2c] font-bold mb-3 leading-tight" style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.05)" }}>
-                    {gift.name}
-                  </h3>
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-xl font-serif text-[#3c4d2c] font-bold leading-tight flex-1" style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.05)" }}>
+                      {gift.name}
+                    </h3>
+                    {gift.category && (
+                      <span className="ml-2 px-2 py-1 text-xs rounded-full border flex items-center gap-1" 
+                            style={{ 
+                              backgroundColor: `${categories.find(cat => cat.value === gift.category)?.color === 'orange' ? 'rgb(255 237 213)' :
+                                                 categories.find(cat => cat.value === gift.category)?.color === 'blue' ? 'rgb(219 234 254)' :
+                                                 categories.find(cat => cat.value === gift.category)?.color === 'purple' ? 'rgb(233 213 255)' :
+                                                 categories.find(cat => cat.value === gift.category)?.color === 'cyan' ? 'rgb(207 250 254)' :
+                                                 categories.find(cat => cat.value === gift.category)?.color === 'green' ? 'rgb(220 252 231)' :
+                                                 'rgb(252 231 243)'}`,
+                              color: `${categories.find(cat => cat.value === gift.category)?.color === 'orange' ? 'rgb(154 52 18)' :
+                                        categories.find(cat => cat.value === gift.category)?.color === 'blue' ? 'rgb(29 78 216)' :
+                                        categories.find(cat => cat.value === gift.category)?.color === 'purple' ? 'rgb(107 33 168)' :
+                                        categories.find(cat => cat.value === gift.category)?.color === 'cyan' ? 'rgb(8 145 178)' :
+                                        categories.find(cat => cat.value === gift.category)?.color === 'green' ? 'rgb(21 128 61)' :
+                                        'rgb(157 23 77)'}`,
+                              borderColor: `${categories.find(cat => cat.value === gift.category)?.color === 'orange' ? 'rgb(255 192 120)' :
+                                              categories.find(cat => cat.value === gift.category)?.color === 'blue' ? 'rgb(147 197 253)' :
+                                              categories.find(cat => cat.value === gift.category)?.color === 'purple' ? 'rgb(196 181 253)' :
+                                              categories.find(cat => cat.value === gift.category)?.color === 'cyan' ? 'rgb(165 243 252)' :
+                                              categories.find(cat => cat.value === gift.category)?.color === 'green' ? 'rgb(187 247 208)' :
+                                              'rgb(244 114 182)'}`
+                            }}>
+                        <span>{categories.find(cat => cat.value === gift.category)?.icon}</span>
+                      </span>
+                    )}
+                  </div>
                   
                   <p className="text-gray-700 text-sm mb-5 flex-grow leading-relaxed">{gift.description}</p>
                   
@@ -1209,6 +1531,7 @@ const GiftList: React.FC = () => {
                 const giftData = {
                   name: nameInput.value,
                   description: descInput.value,
+                  category: newGift.category, // Incluindo a categoria
                   imageurl: newGift.imageurl, // Usando o estado para a imagem
                   imageUrl: newGift.imageurl, // Adicionando todas as variações possíveis
                   image_url: newGift.imageurl, 
@@ -1229,7 +1552,8 @@ const GiftList: React.FC = () => {
                       setNewGift({
                         name: '',
                         description: '',
-                        imageurl: ''
+                        imageurl: '',
+                        category: 'diversos'
                       });
                       
                       // Resetando manualmente os campos do formulário
@@ -1275,6 +1599,26 @@ const GiftList: React.FC = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3c4d2c]/50 text-sm"
                   ></textarea>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-gray-700 text-xs font-medium mb-1" htmlFor="gift-category">
+                    Categoria*
+                  </label>
+                  <select
+                    id="gift-category"
+                    name="category"
+                    value={newGift.category}
+                    onChange={handleNewGiftChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3c4d2c]/50 text-sm"
+                  >
+                    {categories.filter(cat => cat.value !== 'todas').map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.icon} {category.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div className="mb-4">
@@ -1431,6 +1775,26 @@ const GiftList: React.FC = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3c4d2c]/50 text-sm"
                   ></textarea>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-gray-700 text-xs font-medium mb-1" htmlFor="edit-category">
+                    Categoria*
+                  </label>
+                  <select
+                    id="edit-category"
+                    name="category"
+                    value={editGift.category || 'diversos'}
+                    onChange={handleEditGiftChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3c4d2c]/50 text-sm"
+                  >
+                    {categories.filter(cat => cat.value !== 'todas').map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.icon} {category.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div className="mb-3">
@@ -1666,6 +2030,51 @@ const GiftList: React.FC = () => {
                       Resetar Todas as Reservas
                     </button>
                     
+                    {/* Botões de Importação/Exportação */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={exportTemplateJSON}
+                          className="py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center justify-center text-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          Baixar Template
+                        </button>
+                        <button
+                          onClick={() => setShowTemplateModal(true)}
+                          className="py-2 bg-green-400 text-white rounded-md hover:bg-green-500 transition-colors flex items-center justify-center text-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                          </svg>
+                          Ver Template
+                        </button>
+                      </div>
+                      
+                      <label className="py-2.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center justify-center text-xs cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".json,application/json"
+                          onChange={handleJSONFileUpload}
+                          className="hidden"
+                          disabled={isImporting}
+                        />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        {isImporting ? 'Importando...' : 'Importar JSON'}
+                      </label>
+                    </div>
+                    
                     <button
                       onClick={exportGiftData}
                       className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
@@ -1677,6 +2086,34 @@ const GiftList: React.FC = () => {
                       </svg>
                       Exportar Dados (JSON)
                     </button>
+
+                    {/* Botões de configuração */}
+                    <div className="border-t pt-3 mt-3">
+                      <p className="text-xs text-gray-600 mb-2 text-center">⚙️ Configurações</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={checkTableStructure}
+                          className="py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors flex items-center justify-center text-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M9 12l2 2 4-4"></path>
+                            <circle cx="12" cy="12" r="9"></circle>
+                          </svg>
+                          Ver Colunas
+                        </button>
+                        
+                        <button
+                          onClick={addCategoryColumn}
+                          className="py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center text-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M12 5v14"></path>
+                            <path d="M5 12h14"></path>
+                          </svg>
+                          Config. Categoria
+                        </button>
+                      </div>
+                    </div>
                     
                     {adminMode && (
                       <button
@@ -1701,6 +2138,247 @@ const GiftList: React.FC = () => {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Resultados da Importação */}
+      {importResults && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-3 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl w-full max-w-lg shadow-xl overflow-hidden">
+            {/* Cabeçalho */}
+            <div className={`p-4 ${importResults.success > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+              <h2 className="text-white font-serif text-xl font-bold flex items-center">
+                {importResults.success > 0 ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                    <path d="M20 6L9 17l-5-5"></path>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                )}
+                Resultado da Importação
+              </h2>
+            </div>
+            
+            {/* Conteúdo */}
+            <div className="p-6">
+              {/* Resumo */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{importResults.total}</div>
+                  <div className="text-xs text-gray-600">Total</div>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{importResults.success}</div>
+                  <div className="text-xs text-gray-600">Sucesso</div>
+                </div>
+                <div className="text-center p-3 bg-red-50 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">{importResults.errors.length}</div>
+                  <div className="text-xs text-gray-600">Erros</div>
+                </div>
+              </div>
+              
+              {/* Lista de erros */}
+              {importResults.errors.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-medium text-red-700 mb-2">Erros encontrados:</h3>
+                  <div className="max-h-40 overflow-y-auto bg-red-50 rounded-lg p-3">
+                    {importResults.errors.map((error, index) => (
+                      <div key={index} className="text-sm text-red-700 mb-1">
+                        • {error}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Mensagem de sucesso */}
+              {importResults.success > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <p className="text-green-700 text-sm">
+                    ✅ {importResults.success} presente(s) adicionado(s) com sucesso!
+                  </p>
+                </div>
+              )}
+              
+              {/* Botão de fechar */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setImportResults(null)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Template JSON */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-3 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl w-full max-w-2xl shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            {/* Cabeçalho */}
+            <div className="bg-green-500 p-4 flex items-center justify-between">
+              <h2 className="text-white font-serif text-xl font-bold flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                Template para Importação JSON
+              </h2>
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            
+            {/* Conteúdo */}
+            <div className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Como usar:</h3>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Copie o código JSON abaixo</li>
+                  <li>Salve em um arquivo com extensão <code className="bg-gray-100 px-1 rounded">.json</code> (ex: presentes.json)</li>
+                  <li>Edite o arquivo adicionando seus próprios presentes</li>
+                  <li>Use o botão "Importar JSON" para enviar o arquivo</li>
+                </ol>
+              </div>
+              
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800">Template JSON:</h3>
+                  <button
+                    onClick={() => {
+                      const template = [
+                        {
+                          "name": "Jogo de Panelas",
+                          "description": "Conjunto completo com 5 panelas antiaderentes",
+                          "imageurl": "🍳",
+                          "category": "cozinha"
+                        },
+                        {
+                          "name": "Micro-ondas",
+                          "description": "Micro-ondas 30 litros com grill",
+                          "imageurl": "📡",
+                          "category": "cozinha"
+                        },
+                        {
+                          "name": "Sofá",
+                          "description": "Sofá 3 lugares cor bege",
+                          "imageurl": "🛋️",
+                          "category": "sala"
+                        },
+                        {
+                          "name": "Jogo de Cama",
+                          "description": "Jogo de cama casal 100% algodão",
+                          "imageurl": "🛏️",
+                          "category": "quarto"
+                        },
+                        {
+                          "name": "Toalhas de Banho",
+                          "description": "Kit com 4 toalhas felpudas",
+                          "imageurl": "🚿",
+                          "category": "banheiro"
+                        },
+                        {
+                          "name": "Cesto de Roupa",
+                          "description": "Cesto organizador para lavanderia",
+                          "imageurl": "🧺",
+                          "category": "lavanderia"
+                        }
+                      ];
+                      
+                      const templateText = JSON.stringify(template, null, 2);
+                      navigator.clipboard.writeText(templateText).then(() => {
+                        alert('Template JSON copiado para a área de transferência!');
+                      }).catch(() => {
+                        alert('Erro ao copiar. Selecione manualmente o texto abaixo.');
+                      });
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    📋 Copiar JSON
+                  </button>
+                </div>
+                
+                <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm border max-h-96">
+{JSON.stringify([
+  {
+    "name": "Jogo de Panelas",
+    "description": "Conjunto completo com 5 panelas antiaderentes",
+    "imageurl": "🍳",
+    "category": "cozinha"
+  },
+  {
+    "name": "Micro-ondas",
+    "description": "Micro-ondas 30 litros com grill",
+    "imageurl": "📡",
+    "category": "cozinha"
+  },
+  {
+    "name": "Sofá",
+    "description": "Sofá 3 lugares cor bege",
+    "imageurl": "🛋️",
+    "category": "sala"
+  },
+  {
+    "name": "Jogo de Cama",
+    "description": "Jogo de cama casal 100% algodão",
+    "imageurl": "🛏️",
+    "category": "quarto"
+  },
+  {
+    "name": "Toalhas de Banho",
+    "description": "Kit com 4 toalhas felpudas",
+    "imageurl": "🚿",
+    "category": "banheiro"
+  },
+  {
+    "name": "Cesto de Roupa",
+    "description": "Cesto organizador para lavanderia",
+    "imageurl": "🧺",
+    "category": "lavanderia"
+  }
+], null, 2)}
+                </pre>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-blue-800 mb-2">💡 Dicas importantes:</h4>
+                <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                  <li><strong>name:</strong> Nome do presente (obrigatório)</li>
+                  <li><strong>description:</strong> Descrição detalhada (obrigatório)</li>
+                  <li><strong>imageurl:</strong> URL da imagem ou emoji (opcional - padrão: 🎁)</li>
+                  <li><strong>category:</strong> Categoria do ambiente (opcional - padrão: diversos)</li>
+                  <li>Categorias: cozinha, sala, quarto, banheiro, lavanderia, diversos</li>
+                  <li>Use emojis como: 🍳 🛋️ 🛏️ 🚿 🧺 🎁</li>
+                  <li>Adicione quantos presentes quiser no array</li>
+                </ul>
+              </div>
+              
+              {/* Botão de fechar */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowTemplateModal(false)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         </div>
