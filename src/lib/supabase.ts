@@ -484,5 +484,29 @@ export const giftService = {
         error: e instanceof Error ? e.message : 'Erro desconhecido' 
       };
     }
+  },
+
+  // Excluir todos os presentes
+  deleteAllGifts: async function() {
+    try {
+      console.log('🗑️ Excluindo todos os presentes...');
+      
+      const { error } = await supabase
+        .from('gifts')
+        .delete()
+        .gte('id', 0); // Condição que sempre será verdadeira para excluir todos
+      
+      if (error) {
+        console.error('❌ Erro ao excluir todos os presentes:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('✅ Todos os presentes excluídos com sucesso');
+      return { success: true };
+      
+    } catch (e) {
+      console.error('❌ Exceção ao excluir todos os presentes:', e);
+      throw e;
+    }
   }
 }; 
