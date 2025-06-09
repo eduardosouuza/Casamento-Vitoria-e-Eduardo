@@ -299,6 +299,44 @@ const GiftList: React.FC = () => {
       }
     }
   };
+
+  // Função para excluir todos os presentes
+  const deleteAllGifts = async () => {
+    const totalGifts = gifts.length;
+    
+    if (totalGifts === 0) {
+      alert('Não há presentes para excluir.');
+      return;
+    }
+    
+    // Primeira confirmação
+    if (!window.confirm(`⚠️ ATENÇÃO: Você está prestes a excluir TODOS os ${totalGifts} presentes da lista.\n\nEsta ação é IRREVERSÍVEL e excluirá:\n- Todos os presentes\n- Todas as reservas\n- Todas as imagens\n\nTem certeza que deseja continuar?`)) {
+      return;
+    }
+    
+    // Segunda confirmação mais específica
+    if (!window.confirm(`🚨 CONFIRMAÇÃO FINAL:\n\nDigite "EXCLUIR TUDO" mentalmente e clique OK para confirmar a exclusão de TODOS os ${totalGifts} presentes.\n\nEsta ação NÃO PODE ser desfeita!`)) {
+      return;
+    }
+    
+    try {
+      // Excluir todos os presentes do banco
+      await giftService.deleteAllGifts();
+      
+      // Limpar a lista local
+      setGifts([]);
+      
+      // Atualizar estatísticas
+      updateAdminStats();
+      
+      alert(`✅ Sucesso!\n\nTodos os ${totalGifts} presentes foram excluídos permanentemente.`);
+      
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
+      alert(`❌ Erro ao excluir presentes: ${errorMsg}`);
+      console.error("Erro ao excluir todos os presentes:", err);
+    }
+  };
   
   // Função para exportar dados
   const exportGiftData = () => {
@@ -890,7 +928,7 @@ const GiftList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-[#f8f5f0]/20 to-[#f8f5f0]/40 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#f8f5f0]/20 to-[#f8f5f0]/40 py-8 px-4 overflow-x-hidden">
       {/* Indicador de carregamento */}
       {loading && (
         <div className="fixed inset-0 bg-white/80 flex items-center justify-center z-50">
@@ -919,7 +957,7 @@ const GiftList: React.FC = () => {
         </div>
       )}
       
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto overflow-x-hidden">
         {/* Cabeçalho */}
         <div className="text-center mb-12 relative">
           {/* Elementos decorativos */}
@@ -1176,7 +1214,7 @@ const GiftList: React.FC = () => {
         </div>
 
         {/* Grid de presentes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 overflow-x-hidden">
           {filteredGifts.map(gift => (
             <div 
               key={gift.id}
@@ -2028,6 +2066,19 @@ const GiftList: React.FC = () => {
                         <path d="M12 12h.01"></path>
                       </svg>
                       Resetar Todas as Reservas
+                    </button>
+
+                    <button
+                      onClick={deleteAllGifts}
+                      className="w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                      Excluir Todos os Presentes
                     </button>
                     
                     {/* Botões de Importação/Exportação */}
