@@ -403,13 +403,15 @@ function App() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-serif text-lg mb-2 font-bold text-[#3c4d2c]">Lista Virtual</h3>
-                <Link 
-                  to="/lista-presentes" 
+                <a 
+                  href="https://www.querodecasamento.com.br/lista-de-casamento/eduardoevitoria2025"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleCloseModal}
                   className="inline-block px-6 py-2 bg-[#3c4d2c] text-white rounded-full hover:bg-[#2f3c22] transition-colors font-medium"
                 >
-                  Ver Lista Online
-                </Link>
+                  Ver Lista Online  
+                </a>
               </div>
               <div>
                 <h3 className="font-serif text-lg mb-2 font-bold text-[#3c4d2c]">PIX</h3>
@@ -1092,13 +1094,15 @@ function App() {
                     </p>
                   </div>
                   <div className="flex justify-center">
-                    <Link 
-                      to="/lista-presentes"
+                    <a 
+                      href="https://www.querodecasamento.com.br/lista-de-casamento/eduardoevitoria2025"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3c4d2c] text-white rounded-full hover:bg-[#2f3c22] transition-colors text-sm font-medium shadow-md transform hover:scale-105 transition-all"
                     >
                       <Gift size={18} />
                       Ver Lista de Presentes
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
